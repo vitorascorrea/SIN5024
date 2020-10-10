@@ -78,22 +78,26 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices)
 
     # se encontrou solução ótima, imprime solução
     if termination_status(modelo) == MathOptInterface.OPTIMAL
-        imprime_solucao(x, num_vertices, num_cores)
+        imprime_solucao(x, num_vertices, num_cores, cor_vertices)
     else
         println()
         println_in_yellow(string("Erro: Solver não encontrou solução ótima. Status = ", termination_status(modelo)))
     end
 end
 
-function imprime_solucao(x, num_vertices, num_cores)
+function imprime_solucao(x, num_vertices, num_cores, cor_vertices)
     println()
-    println_in_yellow("Matriz de vertices e cores final: ")
+    num_trocas = 0
     for i = 1:num_vertices
+        cor_original = cor_vertices[i]
         for j = 1:num_cores
-            print_in_yellow(string(value(x[i][j]), " "))
+            if value(x[i][j]) == 0.0 && cor_original == j
+                num_trocas += 1
+            end
         end
-        println()
     end
+
+    print_in_yellow(string("Número de trocas: ", num_trocas))
 end
 
 function print_in_yellow(texto)
@@ -110,7 +114,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/instancia_1.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_10.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
     solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3])
 end
