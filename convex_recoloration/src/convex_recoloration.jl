@@ -94,17 +94,22 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices)
 
     # se encontrou solução ótima, imprime solução
     if termination_status(modelo) == MathOptInterface.OPTIMAL
-        imprime_solucao(x, modelo)
+        imprime_solucao(x, num_vertices, num_cores)
     else
         println()
         println_in_yellow(string("Erro: Solver não encontrou solução ótima. Status = ", termination_status(modelo)))
     end
 end
 
-function imprime_solucao(x, modelo)
+function imprime_solucao(x, num_vertices, num_cores)
     println()
-    println_in_yellow(modelo)
-    println_in_yellow(string("Matriz de vertices e cores: ", x))
+    println_in_yellow("Matriz de vertices e cores: ")
+    for i = 1:num_vertices
+        for j = 1:num_cores
+            print_in_yellow(string(value(x[i][j]), " "))
+        end
+        println()
+    end
 end
 
 function print_in_yellow(texto)
