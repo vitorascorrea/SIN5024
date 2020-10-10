@@ -1,0 +1,12 @@
+12
+5
+30 3 2 4 5
+3 4 2 1 8
+
+# Formato dos arquivos de entrada:
+# capacidade da mochila
+# n_itens
+# v_1 v_2 ... v_n (valores dos itens)
+# p_1 p_2 ... p_n (pesos dos itens)
+
+
