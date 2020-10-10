@@ -37,56 +37,40 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices)
     # --- adicionando as variáveis no modelo e a função objetivo ---
     x = []
 
+    soma_trocas_vertice = AffExpr()
     for i = 1:num_vertices
         push!(x, [])
-        soma_trocas_vertice = AffExpr()
-        for j = 1:num_cores
-            push!(x[i], cor_vertices[i] == j ? 1 : 0)
-            x[i][j] = @variable(modelo, binary=true)
-            add_to_expression!(soma_trocas_vertice, x[i][j])
+        for k = 1:num_cores
+            push!(x[i], @variable(modelo, binary=true))
+            add_to_expression!(soma_trocas_vertice, x[i][k], cor_vertices[i] != k)
         end
-        @objective(modelo, Min, soma_trocas_vertice)
     end
+    @objective(modelo, Min, soma_trocas_vertice)
     # ----------------------------------------------
 
     # --- adicionando a restrição de só poder ter uma cor por vértice ---
     for i = 1:num_vertices
         soma_cores_por_vertice = AffExpr()
-        for j = 1:num_cores
-            add_to_expression!(soma_cores_por_vertice, x[i][j])
+        for k = 1:num_cores
+            add_to_expression!(soma_cores_por_vertice, x[i][k])
         end
         @constraint(modelo, soma_cores_por_vertice == 1)
     end
     # ----------------------------------------------
 
     # --- adicionando a restrição de não poder ter uma cor diferente em um vértice no meio de dois outros com cores iguais. ---
-    for i = 1:num_vertices
-        pontas_com_cor_igual = false
-        cor_vertice_inicio = cor_vertices[i]
-        soma_cores_entre_vertices = AffExpr()
-
-        for j = reverse(i:num_vertices)
-            if i == j
-                break
-            end
-
-            cor_vertice_atual = cor_vertices[j]
-
-            if pontas_com_cor_igual == false
-                pontas_com_cor_igual = cor_vertice_inicio == cor_vertice_atual
-                continue
-            else
-                # se as pontas forem iguais, verificamos se o vertice atual é diferente do vertice de inicio
-                if cor_vertice_atual != cor_vertice_inicio
-                    add_to_expression!(soma_cores_entre_vertices, x[j][cor_vertice_atual])
-                else
-                    add_to_expression!(soma_cores_entre_vertices, -1)
+    for k = 1:num_cores
+        for p = 1:(num_vertices - 2)
+            for q = (p + 1):(num_vertices - 1)
+                for r = (q + 1):(num_vertices)
+                    soma_cores_entre_vertices = AffExpr()
+                    somatoria = x[p][k] - x[q][k] + x[r][k]
+                    add_to_expression!(soma_cores_entre_vertices, somatoria)
+                    @constraint(modelo, soma_cores_entre_vertices <= 1)
                 end
             end
         end
-        @constraint(modelo, soma_cores_entre_vertices <= 1)
     end
-
     # ----------------------------------------------
 
     # pede para o solver resolver o modelo
@@ -103,7 +87,7 @@ end
 
 function imprime_solucao(x, num_vertices, num_cores)
     println()
-    println_in_yellow("Matriz de vertices e cores: ")
+    println_in_yellow("Matriz de vertices e cores final: ")
     for i = 1:num_vertices
         for j = 1:num_cores
             print_in_yellow(string(value(x[i][j]), " "))
@@ -126,7 +110,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_2.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/instancia_1.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
     solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3])
 end
