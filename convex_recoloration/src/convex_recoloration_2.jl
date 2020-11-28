@@ -32,7 +32,8 @@ end
 
 function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_user_callback, use_lazy_callback)
     # criando um modelo "vazio" no gurobi
-    modelo = Model(with_optimizer(Gurobi.Optimizer, PreCrush=1))
+    modelo = Model(Gurobi.Optimizer)
+    set_optimizer_attributes(modelo, "PreCrush" => 1)
 
     # --- adicionando as variáveis no modelo e a função objetivo ---
     x = []
@@ -79,15 +80,13 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
     function sep_ineq_convex_gen(cb_data)
         for k = 1:num_cores
             v = []
-            N = 0
 
             for i = 1:num_vertices
                 push!(v, callback_value(cb_data, x[i][k]))
-                N = N + 1
             end
 
-            plus = Vector{Int}(undef, N)
-            minus = Vector{Int}(undef, N)
+            plus = Array{Int}(undef, num_vertices)
+            minus = Array{Int}(undef, num_vertices)
 
             plus[1] = v[1]
             plus[2] = v[2]
@@ -99,14 +98,18 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
             # também criamos 4 variáveis auxiliares para ajudar no laço for r = 3:N, para faze-lo ser O(N) também
 
             plus_cache = Dict()
+            plus_cache[1] = plus[1]
+            plus_cache[2] = plus[2]
             minus_cache = Dict()
+            minus_cache[1] = minus[1]
+            minus_cache[2] = minus[2]
 
             current_plus_max_value = plus[2]
             current_plus_max_index = 2
             current_minus_max_value = minus[2]
             current_minus_max_index = 2
 
-            for r = 3:N
+            for r = 3:num_vertices
                 if current_plus_max_value < plus[r - 1]
                     current_plus_max_value = plus[r - 1]
                     current_plus_max_index = r - 1
@@ -120,7 +123,7 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
                 p = current_plus_max_index
                 q = current_minus_max_index
                 plus[r] = max(v[r], minus[q] + v[r])
-                minus = plus[p] - v[r]
+                minus[r] = plus[p] - v[r]
 
                 if !haskey(plus_cache, r)
                     plus_cache[r] = current_plus_max_index
@@ -133,18 +136,20 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
 
             if current_plus_max_value > 1 + ϵ
                 lhf = AffExpr()
-                build_ineq(N, "+", lhf, plus, plus_cache, minus, minus_cache)
-                @constraint(modelo, lhf <= 1)
+                build_ineq(num_vertices, "+", lhf, plus, plus_cache, minus, minus_cache)
+                con = @build_constraint(lhf <= 1)
+                if use_user_callback
+                    MathOptInterface.submit(modelo, MathOptInterface.UserCut(cb_data), con)
+                elseif use_lazy_callback
+                    MathOptInterface.submit(modelo, MathOptInterface.LazyConstraint(cb_data), con)
+                end
             end
         end
     end
     # ----------------------------------------------
-
     if use_user_callback == true
         MathOptInterface.set(modelo, MathOptInterface.UserCutCallback(), sep_ineq_convex_gen)
-    end
-
-    if use_lazy_callback == true
+    elseif use_lazy_callback == true
         MathOptInterface.set(modelo, MathOptInterface.LazyConstraintCallback(), sep_ineq_convex_gen)
     end
 
@@ -205,7 +210,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_10.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_3.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
     solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3], false, true)
 end
