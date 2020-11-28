@@ -91,10 +91,12 @@ function imprime_solucao(x, num_vertices, num_cores, cor_vertices)
     for i = 1:num_vertices
         cor_original = cor_vertices[i]
         for j = 1:num_cores
+            print_in_yellow(string(value(x[i][j]), " "))
             if value(x[i][j]) == 0.0 && cor_original == j
                 num_trocas += 1
             end
         end
+        println()
     end
 
     print_in_yellow(string("Número de trocas: ", num_trocas))
