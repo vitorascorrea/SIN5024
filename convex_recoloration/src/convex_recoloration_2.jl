@@ -193,7 +193,7 @@ function imprime_solucao(x, num_vertices, num_cores, cor_vertices)
         # println()
     end
 
-    print_in_yellow(string("Número de trocas: ", num_trocas))
+    println_in_yellow(string("Número de trocas: ", num_trocas))
 end
 
 function print_in_yellow(texto)
@@ -212,6 +212,17 @@ function executa_teste()
     # qual é o diretório raiz de execução.
     arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_3.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
+
+    # rodando instancia normal
+    println(" ============ Instância normal ===============")
+    solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3], false, false)
+
+    # rodando instancia com user cut callback
+    println(" ============ User Cut callback ===============")
+    solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3], true, false)
+
+    # rodando instancia com lazy constraint callback
+    println(" ============ Lazy Constraint callback ===============")
     solve_convex_recoloration(dados_entrada[1], dados_entrada[2], dados_entrada[3], false, true)
 end
 
