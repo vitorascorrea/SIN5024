@@ -33,7 +33,11 @@ end
 function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_user_callback, use_lazy_callback)
     # criando um modelo "vazio" no gurobi
     modelo = Model(Gurobi.Optimizer)
-    set_optimizer_attributes(modelo, "PreCrush" => 1)
+    if use_lazy_callback
+        set_optimizer_attributes(modelo, "LazyConstraints" => 1)
+    elseif use_user_callback
+        set_optimizer_attributes(modelo, "PreCrush" => 1)
+    end
 
     # --- adicionando as variáveis no modelo e a função objetivo ---
     x = []
@@ -147,9 +151,9 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
         end
     end
     # ----------------------------------------------
-    if use_user_callback == true
+    if use_user_callback
         MathOptInterface.set(modelo, MathOptInterface.UserCutCallback(), sep_ineq_convex_gen)
-    elseif use_lazy_callback == true
+    elseif use_lazy_callback
         MathOptInterface.set(modelo, MathOptInterface.LazyConstraintCallback(), sep_ineq_convex_gen)
     end
 
