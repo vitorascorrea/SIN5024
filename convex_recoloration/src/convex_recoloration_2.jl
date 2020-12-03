@@ -34,9 +34,9 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
     # criando um modelo "vazio" no gurobi
     modelo = Model(Gurobi.Optimizer)
     if use_lazy_callback
-        set_optimizer_attributes(modelo, "LazyConstraints" => 1)
+        set_optimizer_attribute(modelo, "LazyConstraints", 1)
     elseif use_user_callback
-        set_optimizer_attributes(modelo, "PreCrush" => 1)
+        set_optimizer_attribute(modelo, "PreCrush", 1)
     end
 
     # --- adicionando as variáveis no modelo e a função objetivo ---
@@ -89,8 +89,8 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
                 push!(v, callback_value(cb_data, x[i][k]))
             end
 
-            plus = Array{Int}(undef, num_vertices)
-            minus = Array{Int}(undef, num_vertices)
+            plus = Array{Float64}(undef, num_vertices)
+            minus = Array{Float64}(undef, num_vertices)
 
             plus[1] = v[1]
             plus[2] = v[2]
@@ -214,7 +214,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/rand_20_7.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/rand_50_8.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
 
     # rodando instancia normal
