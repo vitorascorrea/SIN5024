@@ -102,11 +102,11 @@ function solve_convex_recoloration(num_vertices, num_cores, cor_vertices, use_us
             # também criamos 4 variáveis auxiliares para ajudar no laço for r = 3:N, para faze-lo ser O(N) também
 
             plus_cache = Dict()
-            plus_cache[1] = plus[1]
-            plus_cache[2] = plus[2]
+            plus_cache[1] = 1
+            plus_cache[2] = 2
             minus_cache = Dict()
-            minus_cache[1] = minus[1]
-            minus_cache[2] = minus[2]
+            minus_cache[1] = 1
+            minus_cache[2] = 2
 
             current_plus_max_value = plus[2]
             current_plus_max_index = 2
@@ -214,7 +214,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/rand_10_3.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/rand_20_7.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
 
     # rodando instancia normal
