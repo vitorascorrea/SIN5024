@@ -178,8 +178,10 @@ function build_ineq(i, signal, lhf, plus, plus_cache, minus, minus_cache)
     elseif i >= 2
         j = minus_cache[i]
         j_value = minus[j]
-        add_to_expression!(lhf, -1 * j_value)
-        build_ineq(j - 1, "+", lhf, plus, plus_cache, minus, minus_cache)
+        if j_value > 0
+            add_to_expression!(lhf, -1 * j_value)
+            build_ineq(j - 1, "+", lhf, plus, plus_cache, minus, minus_cache)
+        end
     end
 end
 
@@ -214,7 +216,7 @@ function executa_teste()
     # seja o seu projeto, clique em "File->Add Project Folder..." e selecione a pasta
     # "binary_knapsack". Execute a função "pwd()" no REPL do Julia para saber
     # qual é o diretório raiz de execução.
-    arq_instancia = joinpath(@__DIR__, "../instancias/rand_50_8.txt")
+    arq_instancia = joinpath(@__DIR__, "../instancias/rand_20_8.txt")
     dados_entrada = le_dados_entrada(arq_instancia)
 
     # rodando instancia normal
